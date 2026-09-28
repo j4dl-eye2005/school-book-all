@@ -1,0 +1,861 @@
+/* ==========================================================================
+   School Book Management — "Pop Polygon" (matched to unslop.site export)
+   --------------------------------------------------------------------------
+   Visual values taken from the reference export's computed CSS:
+     - Electric-blue canvas            rgb(39, 66, 245)   #2742F5
+     - Lighter/darker blue shapes      #4259FF / #1F36CF
+     - Coral pop                       rgb(255, 107, 74)  #FF6B4A
+     - Yellow pop                      rgb(255, 212, 59)  #FFD43B  (+ #FFB53B)
+     - Pink pop                        rgb(255, 155, 224) #FF9BE0
+     - Green pop                       rgb(124, 227, 177) #7CE3B1
+     - Card surface                    #ffffff, radius 24px
+     - Ink text on cards               rgb(21, 23, 58)    #15173A
+     - Muted text                      rgb(74, 79, 119)   #4A4F77
+     - Soft deep-blue shadow           rgba(10,12,60,.35) 0 18px 44px
+     - Pill radius                     999px
+     - Type: "Space Grotesk", "Inter Tight", sans-serif
+   Fonts are loaded via @import so no PHP/head changes are needed. All existing
+   classes are mapped; no markup changes required.
+   ========================================================================== */
+
+/* Self-hosted fonts (latin subset) — works fully offline, no external calls.
+   Files live in assets/fonts/ next to this stylesheet (../fonts from /css). */
+@font-face {
+    font-family: "Space Grotesk";
+    font-style: normal; font-weight: 400; font-display: swap;
+    src: url("../fonts/SpaceGrotesk-400.woff2") format("woff2");
+}
+@font-face {
+    font-family: "Space Grotesk";
+    font-style: normal; font-weight: 500; font-display: swap;
+    src: url("../fonts/SpaceGrotesk-500.woff2") format("woff2");
+}
+@font-face {
+    font-family: "Space Grotesk";
+    font-style: normal; font-weight: 600; font-display: swap;
+    src: url("../fonts/SpaceGrotesk-600.woff2") format("woff2");
+}
+@font-face {
+    font-family: "Space Grotesk";
+    font-style: normal; font-weight: 700; font-display: swap;
+    src: url("../fonts/SpaceGrotesk-700.woff2") format("woff2");
+}
+@font-face {
+    font-family: "Inter Tight";
+    font-style: normal; font-weight: 400; font-display: swap;
+    src: url("../fonts/InterTight-400.woff2") format("woff2");
+}
+@font-face {
+    font-family: "Inter Tight";
+    font-style: normal; font-weight: 500; font-display: swap;
+    src: url("../fonts/InterTight-500.woff2") format("woff2");
+}
+@font-face {
+    font-family: "Inter Tight";
+    font-style: normal; font-weight: 600; font-display: swap;
+    src: url("../fonts/InterTight-600.woff2") format("woff2");
+}
+@font-face {
+    font-family: "Inter Tight";
+    font-style: normal; font-weight: 700; font-display: swap;
+    src: url("../fonts/InterTight-700.woff2") format("woff2");
+}
+@font-face {
+    font-family: "Inter Tight";
+    font-style: normal; font-weight: 800; font-display: swap;
+    src: url("../fonts/InterTight-800.woff2") format("woff2");
+}
+@font-face {
+    font-family: "Inter Tight";
+    font-style: normal; font-weight: 900; font-display: swap;
+    src: url("../fonts/InterTight-900.woff2") format("woff2");
+}
+
+/* ------------------------------ Design tokens ---------------------------- */
+:root {
+    /* Canvas + blues */
+    --blue:        rgb(39, 66, 245);
+    --blue-light:  rgb(66, 89, 255);
+    --blue-dark:   rgb(31, 54, 207);
+
+    /* Pops */
+    --coral:       rgb(255, 107, 74);
+    --yellow:      rgb(255, 212, 59);
+    --yellow-warm: rgb(255, 181, 59);
+    --pink:        rgb(255, 155, 224);
+    --green:       rgb(124, 227, 177);
+
+    /* Surfaces + text */
+    --card:        #ffffff;
+    --ink:         rgb(21, 23, 58);     /* #15173A */
+    --muted:       rgb(74, 79, 119);    /* #4A4F77 */
+    --on-blue:     #ffffff;
+    --on-blue-dim: rgba(255, 255, 255, 0.9);
+    --hairline:    rgba(21, 23, 58, 0.10);
+
+    /* Shadows — soft, deep-blue (the export's signature) */
+    --shadow-card:  0 18px 44px rgba(10, 12, 60, 0.35);
+    --shadow-soft:  0 10px 30px rgba(0, 0, 30, 0.25);
+    --shadow-hover: 0 24px 56px rgba(10, 12, 60, 0.45);
+
+    /* Radii */
+    --r-card: 24px;
+    --r-md:   16px;
+    --r-pill: 999px;
+
+    /* Type */
+    --font: "Space Grotesk", "Inter Tight", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+    /* Spacing */
+    --s1: 4px;  --s2: 8px;  --s3: 12px; --s4: 16px;
+    --s5: 24px; --s6: 32px; --s7: 48px;
+
+    --maxw: min(1180px, 94vw);
+}
+
+/* ------------------------------ Reset / base ----------------------------- */
+*, *::before, *::after { box-sizing: border-box; }
+html {
+    -webkit-text-size-adjust: 100%;
+    /* Reserve the scrollbar gutter always, so centered content (the navbar,
+       cards, footer) never shifts sideways between short and tall pages. */
+    scrollbar-gutter: stable;
+    overflow-y: scroll;
+    scroll-behavior: smooth;
+    /* Firefox custom scrollbar: coral thumb on a translucent-white track */
+    scrollbar-width: thin;
+    scrollbar-color: var(--coral) rgba(255, 255, 255, 0.12);
+}
+
+/* ------------------------- Custom scrollbar (WebKit) --------------------- */
+/* Page + any scroll container get a rounded coral thumb, no arrow buttons,
+   matching the Pop Polygon palette instead of the default OS chrome. */
+::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+}
+::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.12);
+}
+::-webkit-scrollbar-thumb {
+    background: var(--coral);
+    border-radius: var(--r-pill);
+    /* inset border keeps the thumb visually slimmer than the track */
+    border: 3px solid transparent;
+    background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #e8562f;
+    background-clip: content-box;
+}
+::-webkit-scrollbar-button { display: none; height: 0; width: 0; }
+::-webkit-scrollbar-corner { background: transparent; }
+
+/* On white surfaces (scrollable cards / tables) use a soft ink track so the
+   coral thumb reads well against white rather than the blue-canvas track. */
+.content::-webkit-scrollbar-track,
+table::-webkit-scrollbar-track {
+    background: rgba(21, 23, 58, 0.08);
+}
+.content, table {
+    scrollbar-color: var(--coral) rgba(21, 23, 58, 0.08);
+}
+
+body {
+    font-family: var(--font);
+    color: var(--on-blue);
+    background-color: var(--blue);
+    margin: 0;
+    padding: var(--s5) var(--s4) var(--s7);
+    line-height: 1.5;
+    font-size: 16px;
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+    /* Sticky-footer layout: stack the page vertically and let the main
+       content grow so the footer is pushed to the bottom on short pages. */
+    display: flex;
+    flex-direction: column;
+}
+
+/* ------------------- Floating polygon "confetti" shapes ------------------ */
+/* Big translucent blue blobs + accent dots, echoing the reference canvas.
+   Purely decorative, pointer-events off, sits behind all content. */
+body::before,
+body::after {
+    content: "";
+    position: fixed;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+}
+body::before {
+    width: 520px; height: 520px;
+    top: -180px; left: -160px;
+    background: var(--blue-light);
+    opacity: 0.55;
+}
+body::after {
+    width: 360px; height: 360px;
+    right: 20px; bottom: 40px;
+    background: var(--blue-dark);
+    opacity: 0.6;
+}
+
+/* Everything sits above the decorative layer */
+body > * { position: relative; z-index: 1; }
+
+/* ------------------------------ Typography ------------------------------- */
+h1, h2, h3 {
+    font-family: var(--font);
+    font-weight: 700;
+    line-height: 1.02;
+    letter-spacing: -0.03em;
+    margin: 0 0 var(--s4);
+    color: var(--ink);
+    text-wrap: balance;
+}
+h1 {
+    font-size: clamp(2.2rem, 6vw, 3.75rem);
+}
+/* Coral highlight slab under the page title, echoing the export's chip */
+h1::after {
+    content: "";
+    display: block;
+    width: 96px;
+    height: 12px;
+    margin-top: var(--s3);
+    border-radius: var(--r-pill);
+    background: var(--coral);
+    box-shadow: var(--shadow-soft);
+}
+h2 { font-size: clamp(1.25rem, 2.6vw, 1.6rem); }
+h3 { font-size: 1.15rem; }
+
+p { margin: 0 0 var(--s4); }
+
+a { color: var(--blue); text-underline-offset: 3px; font-weight: 600; }
+a:hover { color: var(--coral); }
+b, strong { font-weight: 700; }
+
+/* --------------------------------- Navbar -------------------------------- */
+/* Transparent bar on the blue canvas with white links, matching the export's
+   header (logo left, links center-ish, pill CTA right). */
+.navbar {
+    width: 100%;
+    max-width: var(--maxw);
+    margin: 0 auto var(--s6);
+    background: transparent;
+    padding: var(--s4) var(--s2);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--s2) var(--s4);
+    color: var(--on-blue);
+    flex: 0 0 auto;
+}
+.navbar a {
+    color: var(--on-blue-dim);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    padding: 8px 4px;
+    border-bottom: 2px solid transparent;
+    transition: color 0.15s ease, border-color 0.15s ease;
+}
+.navbar a:hover,
+.navbar a:focus-visible {
+    color: var(--on-blue);
+    border-color: var(--yellow);
+}
+.nav-user {
+    margin-left: auto;
+    color: var(--on-blue-dim);
+    font-size: 0.85rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s2);
+}
+/* Logout styled as the export's white pill CTA */
+.nav-user a {
+    color: var(--blue);
+    background: var(--on-blue);
+    border-radius: var(--r-pill);
+    padding: 8px 18px;
+    font-weight: 700;
+    border-bottom: 0;
+}
+.nav-user a:hover {
+    color: var(--blue-dark);
+    box-shadow: var(--shadow-soft);
+}
+
+/* ---------------------------- Content surface ---------------------------- */
+/* White rounded card floating on the blue canvas with a soft deep-blue shadow. */
+.content {
+    width: 100%;
+    max-width: var(--maxw);
+    margin: 0 auto;
+    background: var(--card);
+    color: var(--ink);
+    border-radius: var(--r-card);
+    box-shadow: var(--shadow-card);
+    padding: clamp(var(--s5), 4vw, 44px);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    min-width: 0;
+}
+/* Body text inside the white card reads in ink, not white */
+.content p { color: var(--muted); }
+.content a:not(.btn):not(.btn-small) { color: var(--blue); }
+
+/* ------------------------------- Auth screens ---------------------------- */
+/* Split layout: marketing hero on the left, form card on the right.
+   The whole shell is the only flex child of <body>, so margin:auto centers it. */
+.auth-shell {
+    width: 100%;
+    max-width: 980px;
+    margin: auto;
+    display: grid;
+    grid-template-columns: 1.05fr 0.95fr;
+    align-items: center;
+    gap: clamp(var(--s5), 5vw, 64px);
+}
+
+/* Smooth staggered entrance so the page settles in instead of snapping. */
+@keyframes auth-rise {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.auth-hero { animation: auth-rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.auth-shell .content {
+    animation: auth-rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.12s both;
+}
+
+/* ---- Left hero panel (on the blue canvas, white text) ---- */
+.auth-hero { color: var(--on-blue); }
+
+.auth-brand {
+    display: flex;
+    align-items: center;
+    gap: var(--s2);
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--on-blue-dim);
+    margin-bottom: var(--s5);
+}
+.auth-diamond {
+    width: 16px; height: 16px;
+    background: var(--yellow);
+    border-radius: 4px;
+    transform: rotate(45deg);
+}
+
+.auth-eyebrows {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s3);
+    margin-bottom: var(--s5);
+}
+
+.auth-headline {
+    font-size: clamp(2.4rem, 6vw, 3.5rem);
+    font-weight: 700;
+    line-height: 1.02;
+    letter-spacing: -0.03em;
+    color: var(--on-blue);
+    margin: 0 0 var(--s5);
+}
+/* Coral rounded highlight around the key word, like the reference "bold." */
+.auth-headline .hl {
+    display: inline-block;
+    background: var(--coral);
+    color: var(--on-blue);
+    border-radius: var(--r-pill);
+    padding: 0 0.35em 0.06em;
+    box-shadow: var(--shadow-soft);
+    transform: rotate(-1.5deg);
+}
+
+.auth-lead {
+    max-width: 42ch;
+    font-size: 1.02rem;
+    line-height: 1.55;
+    color: var(--on-blue-dim);
+    margin-bottom: var(--s5);
+}
+
+.auth-points {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--s3);
+}
+.auth-points li {
+    display: flex;
+    align-items: center;
+    gap: var(--s3);
+    font-weight: 500;
+    color: var(--on-blue);
+}
+.auth-points .dot {
+    flex: 0 0 auto;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+}
+.dot-coral  { background: var(--coral); }
+.dot-yellow { background: var(--yellow); }
+.dot-green  { background: var(--green); }
+
+/* ---- Right form card ---- */
+.auth-shell .content {
+    max-width: none;
+    margin: 0;
+    padding: clamp(var(--s5), 4vw, 40px);
+    text-align: left;
+}
+
+/* Small brand line inside the card (H1) — quiet, above the hero H2. */
+.auth-shell .content > h1 {
+    display: flex;
+    align-items: center;
+    gap: var(--s2);
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: var(--s4);
+}
+.auth-shell .content > h1::before {
+    content: "";
+    flex: 0 0 auto;
+    width: 14px; height: 14px;
+    background: var(--yellow);
+    border-radius: 4px;
+    transform: rotate(45deg);
+}
+.auth-shell .content > h1::after { display: none; }
+
+/* The action word is the card's hero */
+.auth-shell .content > h2 {
+    font-size: clamp(2rem, 6vw, 2.6rem);
+    font-weight: 700;
+    line-height: 1.02;
+    letter-spacing: -0.03em;
+    margin-bottom: var(--s5);
+    color: var(--ink);
+}
+.auth-shell .content > h2::after {
+    content: "";
+    display: block;
+    width: 64px; height: 10px;
+    margin-top: var(--s4);
+    border-radius: var(--r-pill);
+    background: var(--coral);
+}
+
+/* Full-width submit + inputs on auth forms */
+.auth-shell .content form button {
+    width: 100%;
+    margin-top: var(--s4);
+    padding: 14px 24px;
+    font-size: 1rem;
+}
+.auth-shell .content form input { max-width: none; }
+.auth-shell .content > p {
+    margin-top: var(--s5);
+    font-size: 0.92rem;
+    color: var(--muted);
+}
+
+/* Stack to a single column on small screens (hero on top) */
+@media (max-width: 780px) {
+    .auth-shell {
+        grid-template-columns: 1fr;
+        gap: var(--s6);
+        max-width: 460px;
+    }
+    .auth-hero { text-align: left; }
+}
+
+/* ----------------------------- Dashboard boxes --------------------------- */
+/* Stat cards → the export's rounded white "service" cards. On the dashboard the
+   surrounding .content becomes a grid so the cards flow evenly. */
+.content:has(> .box) {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: var(--s5);
+    align-items: stretch;
+    background: transparent;   /* let the cards be the surfaces on the dashboard */
+    box-shadow: none;
+    padding: 0;
+    max-width: var(--maxw);
+}
+.content:has(> .box) > *:not(.box) {
+    grid-column: 1 / -1;
+    color: var(--on-blue);     /* headings/text sit on the blue canvas here */
+}
+.content:has(> .box) > h1 { color: var(--on-blue); }
+.content:has(> .box) > p { color: var(--on-blue-dim); }
+.content:has(> .box) a:not(.btn) { color: var(--on-blue); }
+
+/* Eyebrow badge row on the dashboard header (pill chips, translucent border) */
+.eyebrows {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s3);
+    margin: 0 0 var(--s5);
+}
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 7px 14px;
+    border-radius: var(--r-pill);
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    color: var(--on-blue);
+    background: rgba(255, 255, 255, 0.06);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.box {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: var(--s2);
+    /* extra top padding leaves room for the token + arrow header row */
+    padding: 60px var(--s5) var(--s5);
+    background: var(--card);
+    color: var(--muted);
+    border-radius: var(--r-card);
+    box-shadow: var(--shadow-card);
+    font-weight: 600;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    position: relative;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+/* Polygon token, top-LEFT, color-cycled per card (matches reference cards) */
+.box::before {
+    content: "";
+    position: absolute;
+    top: var(--s5);
+    left: var(--s5);
+    width: 26px; height: 26px;
+    border-radius: 7px;
+    transform: rotate(14deg);
+}
+.box:nth-of-type(4n+1)::before { background: var(--coral); }
+.box:nth-of-type(4n+2)::before { background: var(--blue); border-radius: 50%; transform: none; }
+.box:nth-of-type(4n+3)::before { background: var(--yellow); }
+.box:nth-of-type(4n)::before {
+    background: transparent; border-radius: 0;
+    width: 0; height: 0;
+    border-left: 14px solid transparent;
+    border-right: 14px solid transparent;
+    border-bottom: 26px solid var(--green);
+    transform: none;
+}
+/* Arrow glyph, top-RIGHT, matching the reference service cards */
+.box::after {
+    content: "\2192";               /* → */
+    position: absolute;
+    top: var(--s5);
+    right: var(--s5);
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--ink);
+    transition: transform 0.15s ease, color 0.15s ease;
+}
+.box:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-hover);
+}
+.box:hover::after {
+    transform: translateX(4px);
+    color: var(--coral);
+}
+.box h2 {
+    font-size: clamp(2.4rem, 5vw, 3rem);
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: -0.04em;
+    margin: 0;
+    text-transform: none;
+}
+
+/* --------------------------------- Tables -------------------------------- */
+/* Clean, card-friendly table: no heavy borders, soft hairlines, a blue header
+   band with white caps, generous padding. Columns size to content. */
+table {
+    width: 100%;
+    max-width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin: var(--s4) 0 var(--s5);
+    border-radius: var(--r-md);
+    overflow: hidden;
+    background: var(--card);
+    box-shadow: var(--shadow-soft);
+    table-layout: auto;
+}
+td, th {
+    overflow-wrap: normal;
+    word-break: normal;
+    hyphens: none;
+}
+th, td {
+    padding: var(--s3) var(--s4);
+    text-align: left;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--hairline);
+}
+tr:last-child td { border-bottom: 0; }
+
+/* List-table column headers: blue band, white uppercase caps */
+th {
+    background: var(--blue);
+    color: var(--on-blue);
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+}
+
+/* Detail tables (view.php): a <th> label sitting beside a <td> value.
+   Give the label a soft tint and ink text — never the blue band. */
+tr > th:has(~ td) {
+    width: 1%;
+    white-space: nowrap;
+    background: rgba(39, 66, 245, 0.06);
+    color: var(--ink);
+    border-right: 1px solid var(--hairline);
+    font-size: 0.85rem;
+}
+
+tbody tr:nth-child(even) td,
+tr:nth-child(even) td { background: rgba(21, 23, 58, 0.025); }
+tr:hover td { background: rgba(39, 66, 245, 0.06); }
+
+/* --------------------------------- Forms --------------------------------- */
+label {
+    display: block;
+    margin: var(--s4) 0 var(--s1);
+    font-weight: 700;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    color: var(--blue);
+}
+input, select, textarea {
+    display: block;
+    width: 100%;
+    max-width: 340px;
+    padding: 12px 16px;
+    margin: var(--s1) 0 var(--s2);
+    font: inherit;
+    color: var(--ink);
+    background: var(--card);
+    border: 1.5px solid var(--hairline);
+    border-radius: var(--r-pill);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+textarea { border-radius: var(--r-md); }
+input[type="checkbox"], input[type="radio"] { width: auto; display: inline-block; }
+input::placeholder { color: #9aa; }
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--blue);
+    box-shadow: 0 0 0 4px rgba(39, 66, 245, 0.15);
+}
+
+/* Search row */
+form[method="get"] {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--s3);
+    margin-bottom: var(--s5);
+}
+form[method="get"] input { margin: 0; flex: 1 1 240px; max-width: none; }
+
+/* -------------------------------- Buttons -------------------------------- */
+/* Pill buttons. Primary = coral on card; blue canvas CTAs = white pill. */
+button, .btn {
+    display: inline-block;
+    font-family: var(--font);
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--on-blue);
+    background: var(--coral);
+    border: none;
+    border-radius: var(--r-pill);
+    padding: 12px 24px;
+    margin-top: var(--s2);
+    text-decoration: none;
+    cursor: pointer;
+    line-height: 1.15;
+    box-shadow: var(--shadow-soft);
+    transition: transform 0.12s ease, box-shadow 0.12s ease, background-color 0.15s ease;
+}
+button:hover, .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+    color: var(--on-blue);
+}
+button:active, .btn:active { transform: translateY(0); box-shadow: var(--shadow-soft); }
+
+/* Primary CTAs placed on the blue dashboard canvas read as white pills */
+.content:has(> .box) .btn {
+    background: var(--on-blue);
+    color: var(--blue);
+}
+.content:has(> .box) .btn:hover { color: var(--blue-dark); }
+
+/* Secondary / row actions: outlined pill in blue */
+.btn-small {
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 6px 14px;
+    margin: 2px 2px 2px 0;
+    background: var(--card);
+    color: var(--blue);
+    border: 1.5px solid rgba(39, 66, 245, 0.35);
+    box-shadow: none;
+}
+.btn-small:hover {
+    background: var(--blue);
+    color: var(--on-blue);
+    border-color: var(--blue);
+}
+
+/* Delete = coral-red danger pill */
+form[action*="delete"] button {
+    background: var(--coral);
+    color: var(--on-blue);
+    border: none;
+}
+form[action*="delete"] button:hover { background: #e8562f; color: var(--on-blue); }
+
+td form { display: inline-block; margin: 0; vertical-align: middle; }
+td:last-child { white-space: nowrap; }
+
+/* -------------------------------- Messages ------------------------------- */
+.error, .success {
+    border-radius: var(--r-md);
+    padding: var(--s3) var(--s4);
+    margin-bottom: var(--s4);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: var(--s2);
+}
+.error {
+    color: #7a1420;
+    background: #ffe3e0;
+    border-left: 6px solid var(--coral);
+}
+.success {
+    color: #0f5132;
+    background: #dcf7ea;
+    border-left: 6px solid var(--green);
+}
+
+/* Overdue badge — coral pill */
+.overdue {
+    display: inline-block;
+    color: var(--on-blue);
+    background: var(--coral);
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    padding: 3px 10px;
+    border-radius: var(--r-pill);
+    margin-left: var(--s1);
+}
+
+/* Status pills for the borrow workflow (pending / borrowed / returned) */
+.status-badge {
+    display: inline-block;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    padding: 3px 10px;
+    border-radius: var(--r-pill);
+    border: 1.5px solid transparent;
+}
+.status-pending {
+    background: rgba(255, 181, 59, 0.18);
+    color: #8a5a00;
+    border-color: var(--yellow-warm);
+}
+.status-borrowed {
+    background: rgba(39, 66, 245, 0.12);
+    color: var(--blue-dark);
+    border-color: rgba(39, 66, 245, 0.4);
+}
+.status-returned {
+    background: rgba(124, 227, 177, 0.22);
+    color: #0f5132;
+    border-color: var(--green);
+}
+
+/* --------------------------------- Footer -------------------------------- */
+.footer {
+    width: 100%;
+    max-width: var(--maxw);
+    /* margin-top:auto pushes the footer to the bottom on short pages
+       (sticky-footer), while auto left/right keeps it centered. */
+    margin: auto auto 0;
+    padding-top: var(--s5);
+    color: var(--on-blue-dim);
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-align: center;
+}
+
+/* Button-group spacing inside <p> action rows */
+.content > p .btn,
+.content > p button { margin-right: var(--s2); margin-bottom: var(--s2); }
+
+/* Muted inline helper text (login note, "Not available") */
+.content > p[style*="color"] { font-size: 0.85rem; color: var(--muted) !important; }
+td span[style*="color"] { color: var(--muted) !important; font-style: italic; font-weight: 600; }
+
+/* ------------------------------ Accessibility ---------------------------- */
+:focus-visible { outline: 3px solid var(--yellow); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition: none !important; scroll-behavior: auto !important; animation: none !important; }
+    .box:hover, button:hover, .btn:hover { transform: none; }
+    .auth-hero, .auth-shell .content { opacity: 1; transform: none; }
+}
+
+/* -------------------------------- Responsive ----------------------------- */
+@media (max-width: 720px) {
+    body { padding: var(--s4) var(--s3) var(--s6); }
+    .content:has(> .box) { grid-template-columns: 1fr; }
+    input, select, textarea { max-width: 100%; }
+    form[method="get"] input { flex-basis: 100%; }
+    .nav-user { margin-left: 0; width: 100%; margin-top: var(--s2); }
+    th, td { padding: var(--s2) var(--s3); }
+    body::before { width: 320px; height: 320px; }
+    body::after { width: 220px; height: 220px; }
+}
+
+@media (max-width: 420px) {
+    h1 { font-size: 2rem; }
+}
